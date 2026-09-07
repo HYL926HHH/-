@@ -1,0 +1,8 @@
+target/
+*.class
+.DS_Store
+*.log
+.gomoku/
+out/
+.idea/*
+!.idea/runConfigurations/

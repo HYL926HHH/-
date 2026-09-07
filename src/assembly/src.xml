@@ -1,0 +1,28 @@
+<assembly xmlns="http://maven.apache.org/ASSEMBLY/2.2.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.2.0 https://maven.apache.org/xsd/assembly-2.2.0.xsd">
+    <id>src</id>
+    <formats>
+        <format>zip</format>
+    </formats>
+    <includeBaseDirectory>true</includeBaseDirectory>
+    <baseDirectory>gomoku-idea</baseDirectory>
+    <fileSets>
+        <fileSet>
+            <directory>${project.basedir}</directory>
+            <outputDirectory>/</outputDirectory>
+            <includes>
+                <include>pom.xml</include>
+                <include>README.md</include>
+                <include>README.txt</include>
+                <include>.gitignore</include>
+                <include>src/**</include>
+                <include>.idea/runConfigurations/**</include>
+                <include>scripts/**</include>
+            </includes>
+            <excludes>
+                <exclude>target/**</exclude>
+            </excludes>
+        </fileSet>
+    </fileSets>
+</assembly>
