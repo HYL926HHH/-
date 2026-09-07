@@ -20,6 +20,7 @@ public final class Game {
     private Pos pending;
     private Stone winner;
     private String lastMessage = "黑棋先行";
+    private final java.util.ArrayList<Pos> winningLine = new java.util.ArrayList<>();
 
     public Game(GameSettings settings) {
         this.settings = settings.copy();
@@ -98,6 +99,10 @@ public final class Game {
         return stone == Stone.BLACK ? blackUndosLeft : whiteUndosLeft;
     }
 
+    public java.util.List<Pos> winningLine() {
+        return winningLine;
+    }
+
     public Optional<Stone> winner() {
         return Optional.ofNullable(winner);
     }
@@ -166,12 +171,13 @@ public final class Game {
             move.forbiddenHint = false;
         }
         moves.add(move);
-        if (stone == Stone.BLACK && ForbiddenAnalyzer.isExactFive(board, x, y, stone)
-                || stone == Stone.WHITE && ForbiddenAnalyzer.isFiveOrMore(board, x, y, stone)) {
+        if ((stone == Stone.BLACK && ForbiddenAnalyzer.isExactFive(board, x, y, stone))
+                || (stone == Stone.WHITE && ForbiddenAnalyzer.isFiveOrMore(board, x, y, stone))) {
             winner = stone;
             status = stone == Stone.BLACK ? GameStatus.BLACK_WIN : GameStatus.WHITE_WIN;
             lastMessage = stone.displayName() + "棋连五获胜";
-            return PlaceResult.ok(status);
+            captureWinningLine(x, y, stone);
+            return new PlaceResult(true, lastMessage, ForbiddenKind.NONE, status);
         }
         if (board.isFull()) {
             return settleDrawOrKomi();
@@ -181,10 +187,39 @@ public final class Game {
         if (settings.swapThree && !swapResolved && settings.handicap == 0 && moves.size() == 3) {
             status = GameStatus.WAITING_SWAP;
             lastMessage = "三手已落，白方可选择换子或继续";
-            return PlaceResult.ok(status);
+            return new PlaceResult(true, lastMessage, ForbiddenKind.NONE, status);
         }
         lastMessage = toMove.displayName() + "棋走子";
-        return PlaceResult.ok(status);
+        return new PlaceResult(true, lastMessage, ForbiddenKind.NONE, status);
+    }
+
+    private void captureWinningLine(int x, int y, Stone stone) {
+        winningLine.clear();
+        for (int[] d : ForbiddenAnalyzer.DIRS) {
+            int len = ForbiddenAnalyzer.lineLength(board, x, y, stone, d[0], d[1]);
+            boolean ok = stone == Stone.WHITE ? len >= 5 : len == 5;
+            if (!ok) {
+                continue;
+            }
+            winningLine.add(new Pos(x, y));
+            for (int s = 1; s < board.size(); s++) {
+                int nx = x + d[0] * s;
+                int ny = y + d[1] * s;
+                if (!board.inBounds(nx, ny) || board.get(nx, ny) != stone) {
+                    break;
+                }
+                winningLine.add(new Pos(nx, ny));
+            }
+            for (int s = 1; s < board.size(); s++) {
+                int nx = x - d[0] * s;
+                int ny = y - d[1] * s;
+                if (!board.inBounds(nx, ny) || board.get(nx, ny) != stone) {
+                    break;
+                }
+                winningLine.add(new Pos(nx, ny));
+            }
+            break;
+        }
     }
 
     private PlaceResult settleDrawOrKomi() {
@@ -192,11 +227,12 @@ public final class Game {
             winner = Stone.WHITE;
             status = GameStatus.WHITE_WIN;
             lastMessage = "满盘且贴目 " + settings.komi + "，判白胜";
+            return new PlaceResult(true, lastMessage, ForbiddenKind.NONE, status);
         } else {
             status = GameStatus.DRAW;
             lastMessage = "满盘和棋";
+            return new PlaceResult(true, lastMessage, ForbiddenKind.NONE, status);
         }
-        return PlaceResult.ok(status);
     }
 
     public boolean swapColors(boolean doSwap) {
@@ -249,6 +285,7 @@ public final class Game {
         pending = null;
         status = GameStatus.PLAYING;
         winner = null;
+        winningLine.clear();
         lastMessage = "悔棋成功，轮到" + toMove.displayName() + "棋";
         return true;
     }
@@ -304,6 +341,7 @@ public final class Game {
         toMove = settings.handicap >= 1 ? Stone.WHITE : Stone.BLACK;
         status = GameStatus.PLAYING;
         winner = null;
+        winningLine.clear();
         int n = Math.min(playUntil, record.size());
         for (int i = 0; i < n; i++) {
             Move m = record.get(i);

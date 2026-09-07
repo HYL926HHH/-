@@ -70,6 +70,7 @@ public final class MainFrame extends JFrame {
     private GameRecord reviewRecord;
     private int reviewIndex;
     private boolean rated;
+    private boolean endAnnounced;
     private final Timer clockTimer;
 
     public MainFrame() {
@@ -160,7 +161,7 @@ public final class MainFrame extends JFrame {
         return it;
     }
 
-    private JPanel buildSide() {
+    private java.awt.Component buildSide() {
         JPanel side = new JPanel(new BorderLayout(8, 8));
         side.setBorder(new EmptyBorder(8, 8, 8, 8));
         side.setPreferredSize(new Dimension(340, 700));
@@ -239,23 +240,28 @@ public final class MainFrame extends JFrame {
             }
         }));
         mid.add(nav, BorderLayout.SOUTH);
+        mid.setPreferredSize(new Dimension(320, 170));
         log.setEditable(false);
         log.setLineWrap(true);
+        log.setRows(7);
         chat.setEditable(false);
         chat.setLineWrap(true);
-        JPanel chatPanel = new JPanel(new BorderLayout(4, 4));
-        chatPanel.add(new JScrollPane(log), BorderLayout.CENTER);
+        chat.setRows(3);
         JPanel netChat = new JPanel(new BorderLayout(4, 4));
         netChat.add(new JScrollPane(chat), BorderLayout.CENTER);
         netChat.add(chatInput, BorderLayout.SOUTH);
         chatInput.addActionListener(e -> sendChat());
-        JSplitPane texts = new JSplitPane(JSplitPane.VERTICAL_SPLIT, new JScrollPane(log), netChat);
-        texts.setResizeWeight(0.55);
+        JPanel logs = new JPanel(new GridLayout(2, 1, 4, 4));
+        logs.add(new JScrollPane(log));
+        logs.add(netChat);
+        logs.setPreferredSize(new Dimension(320, 200));
         side.add(top, BorderLayout.NORTH);
         side.add(mid, BorderLayout.CENTER);
-        side.add(texts, BorderLayout.SOUTH);
-        texts.setPreferredSize(new Dimension(320, 220));
-        return side;
+        side.add(logs, BorderLayout.SOUTH);
+        JScrollPane wrap = new JScrollPane(side);
+        wrap.setBorder(null);
+        wrap.setPreferredSize(new Dimension(360, 700));
+        return wrap;
     }
 
     private JButton btn(String t, Runnable r) {
@@ -267,6 +273,7 @@ public final class MainFrame extends JFrame {
     private void startMode(GameMode mode) {
         settings.mode = mode;
         rated = false;
+        endAnnounced = false;
         puzzle = null;
         reviewRecord = null;
         game = new Game(settings);
@@ -385,6 +392,10 @@ public final class MainFrame extends JFrame {
             } catch (IOException e) {
                 appendLog("评分写入失败：" + e.getMessage());
             }
+        }
+        if (!endAnnounced) {
+            endAnnounced = true;
+            JOptionPane.showMessageDialog(this, game.lastMessage(), "对局结束", JOptionPane.INFORMATION_MESSAGE);
         }
     }
 

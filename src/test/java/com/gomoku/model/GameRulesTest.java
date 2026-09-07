@@ -22,6 +22,7 @@ class GameRulesTest {
         PlaceResult r = g.commit(7, y);
         assertTrue(r.accepted);
         assertEquals(GameStatus.BLACK_WIN, g.status());
+        assertEquals(5, g.winningLine().size());
     }
 
     @Test

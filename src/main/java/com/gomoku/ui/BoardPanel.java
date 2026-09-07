@@ -270,6 +270,16 @@ public final class BoardPanel extends JPanel {
             g2.setStroke(new BasicStroke(2.5f));
             g2.drawOval(cx - r, cy - r, r * 2, r * 2);
         }
+        if (!game.winningLine().isEmpty()) {
+            g2.setColor(new Color(220, 40, 40, 200));
+            g2.setStroke(new BasicStroke(3.5f));
+            for (Pos p : game.winningLine()) {
+                int cx = (int) Math.round(ox + p.x * gp);
+                int cy = (int) Math.round(oy + p.y * gp);
+                int r = (int) (gp * 0.46);
+                g2.drawOval(cx - r, cy - r, r * 2, r * 2);
+            }
+        }
         g2.dispose();
     }
 
