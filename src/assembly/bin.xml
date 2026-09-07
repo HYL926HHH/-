@@ -1,0 +1,35 @@
+<assembly xmlns="http://maven.apache.org/ASSEMBLY/2.2.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.2.0 https://maven.apache.org/xsd/assembly-2.2.0.xsd">
+    <id>bin</id>
+    <formats>
+        <format>zip</format>
+    </formats>
+    <includeBaseDirectory>true</includeBaseDirectory>
+    <fileSets>
+        <fileSet>
+            <directory>${project.basedir}</directory>
+            <outputDirectory>/</outputDirectory>
+            <includes>
+                <include>README.md</include>
+                <include>README.txt</include>
+            </includes>
+        </fileSet>
+        <fileSet>
+            <directory>${project.basedir}/scripts</directory>
+            <outputDirectory>/</outputDirectory>
+            <includes>
+                <include>run.sh</include>
+                <include>run.bat</include>
+            </includes>
+            <fileMode>0755</fileMode>
+        </fileSet>
+    </fileSets>
+    <files>
+        <file>
+            <source>${project.build.directory}/${project.build.finalName}.jar</source>
+            <outputDirectory>/</outputDirectory>
+            <destName>gomoku-idea-1.0.0.jar</destName>
+        </file>
+    </files>
+</assembly>

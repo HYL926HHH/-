@@ -11,6 +11,23 @@
 
 主类：`com.gomoku.GomokuApp`（Java 17+）。
 
+## 打包
+
+```bash
+chmod +x scripts/package.sh
+./scripts/package.sh
+```
+
+或执行 `mvn -DskipTests package`。产物在 `target/`：
+
+| 文件 | 说明 |
+|------|------|
+| `gomoku-idea-1.0.0.jar` | 可直接 `java -jar` 运行 |
+| `gomoku-idea-1.0.0-bin.zip` | 运行包：jar + `run.sh` / `run.bat` |
+| `gomoku-idea-1.0.0-src.zip` | 源码包：解压后用 IntelliJ 打开 `gomoku-idea` 目录 |
+
+需要本机已安装 **JDK 17 或更高**。
+
 ## 已实现功能
 
 - 双人对战、人机对战（堵活四 / 冲活三，难度分级，开局库，浅层搜索）
