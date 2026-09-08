@@ -17,8 +17,8 @@ public final class GameSettings {
     public Stone humanStone = Stone.BLACK;
     public String blackName = "黑方";
     public String whiteName = "白方";
-    public String themeId = "wood";
-    public String skinId = "classic";
+    public String themeId = "gufeng";
+    public String skinId = "jade";
     public boolean sound = true;
     public boolean animation = true;
     public boolean effects = true;

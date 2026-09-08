@@ -7,7 +7,7 @@
     <artifactId>gomoku-idea</artifactId>
     <version>1.0.0</version>
     <name>五子棋 Gomoku</name>
-    <description>IntelliJ IDEA 五子棋：双人/人机、禁手、棋谱、联网房间</description>
+    <description>IntelliJ IDEA 五子棋：古风/卡通/现代桌面皮肤，双人/人机、禁手、棋谱、联网房间</description>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

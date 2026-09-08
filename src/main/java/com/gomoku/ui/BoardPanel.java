@@ -14,14 +14,12 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.geom.Ellipse2D;
 import java.util.function.BiConsumer;
 
 public final class BoardPanel extends JPanel {
@@ -116,12 +114,20 @@ public final class BoardPanel extends JPanel {
             game.settings().themeId = theme.id;
             game.settings().skinId = skin.id;
         }
-        setBackground(theme.panelBg);
+        setBackground(theme.felt);
         repaint();
     }
 
     private int margin() {
-        return 36;
+        if (theme == null) {
+            return 40;
+        }
+        return switch (theme.family) {
+            case GUFENG -> 56;
+            case CARTOON -> 52;
+            case MODERN -> 44;
+            case CLASSIC -> 40;
+        };
     }
 
     private double gap() {
@@ -161,13 +167,13 @@ public final class BoardPanel extends JPanel {
         Graphics2D g2 = (Graphics2D) g.create();
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         if (theme == null) {
-            theme = Theme.wood();
+            theme = Theme.gufeng();
         }
         int w = getWidth();
         int h = getHeight();
-        g2.setPaint(new GradientPaint(0, 0, theme.board, w, h, theme.board.darker()));
-        g2.fillRect(0, 0, w, h);
+        DecorPainter.paintFelt(g2, w, h, theme);
         if (game == null) {
+            DecorPainter.paintOrnaments(g2, w, h, theme);
             g2.dispose();
             return;
         }
@@ -176,24 +182,18 @@ public final class BoardPanel extends JPanel {
         double gp = gap();
         int ox = originX();
         int oy = originY();
+        DecorPainter.paintBoard(g2, ox, oy, gp, n, theme);
         g2.setColor(theme.line);
-        g2.setStroke(new BasicStroke(1.2f));
+        float lineW = theme.family == Theme.Family.MODERN ? 1.0f : theme.family == Theme.Family.CARTOON ? 1.8f : 1.3f;
+        g2.setStroke(new BasicStroke(lineW));
         for (int i = 0; i < n; i++) {
             int x = (int) Math.round(ox + i * gp);
             int y = (int) Math.round(oy + i * gp);
             g2.drawLine(ox, y, (int) Math.round(ox + (n - 1) * gp), y);
             g2.drawLine(x, oy, x, (int) Math.round(oy + (n - 1) * gp));
         }
-        g2.setColor(theme.star);
-        int[] stars = starIndexes(n);
-        for (int sx : stars) {
-            for (int sy : stars) {
-                int cx = (int) Math.round(ox + sx * gp);
-                int cy = (int) Math.round(oy + sy * gp);
-                g2.fillOval(cx - 4, cy - 4, 8, 8);
-            }
-        }
-        g2.setFont(getFont().deriveFont(Font.PLAIN, 11f));
+        DecorPainter.paintStars(g2, ox, oy, gp, starIndexes(n), theme);
+        g2.setFont(Fonts.ui(theme, 11f, Font.PLAIN));
         g2.setColor(theme.labelFg);
         for (int i = 0; i < n; i++) {
             String col = String.valueOf((char) ('A' + i));
@@ -271,7 +271,8 @@ public final class BoardPanel extends JPanel {
             g2.drawOval(cx - r, cy - r, r * 2, r * 2);
         }
         if (!game.winningLine().isEmpty()) {
-            g2.setColor(new Color(220, 40, 40, 200));
+            g2.setColor(new Color(theme.lastMove.getRed(), theme.lastMove.getGreen(),
+                    theme.lastMove.getBlue(), 210));
             g2.setStroke(new BasicStroke(3.5f));
             for (Pos p : game.winningLine()) {
                 int cx = (int) Math.round(ox + p.x * gp);
@@ -280,6 +281,7 @@ public final class BoardPanel extends JPanel {
                 g2.drawOval(cx - r, cy - r, r * 2, r * 2);
             }
         }
+        DecorPainter.paintOrnaments(g2, w, h, theme);
         g2.dispose();
     }
 
@@ -288,43 +290,8 @@ public final class BoardPanel extends JPanel {
         int cx = (int) Math.round(ox + x * gp);
         int cy = (int) Math.round(oy + y * gp);
         int r = (int) (gp * 0.42 * scale);
-        Ellipse2D.Double e = new Ellipse2D.Double(cx - r, cy - r, r * 2.0, r * 2.0);
-        if (skin == StoneSkin.NEON) {
-            g2.setColor(stone == Stone.BLACK ? new Color(40, 40, 50) : new Color(240, 248, 255));
-            g2.fill(e);
-            g2.setColor(stone == Stone.BLACK ? new Color(120, 80, 255) : new Color(80, 220, 255));
-            g2.setStroke(new BasicStroke(2.4f));
-            g2.draw(e);
-        } else if (skin == StoneSkin.FLAT) {
-            g2.setColor(stone == Stone.BLACK ? Color.BLACK : Color.WHITE);
-            g2.fill(e);
-            g2.setColor(Color.DARK_GRAY);
-            g2.draw(e);
-        } else if (skin == StoneSkin.WOOD) {
-            Color a = stone == Stone.BLACK ? new Color(0x4A2C0A) : new Color(0xE8D2A8);
-            Color b = stone == Stone.BLACK ? new Color(0x1A0C02) : new Color(0xC4A574);
-            g2.setPaint(new GradientPaint(cx - r, cy - r, a, cx + r, cy + r, b));
-            g2.fill(e);
-        } else {
-            Color a = stone == Stone.BLACK ? new Color(70, 70, 75) : new Color(255, 255, 255);
-            Color b = stone == Stone.BLACK ? new Color(10, 10, 12) : new Color(200, 200, 205);
-            g2.setPaint(new GradientPaint(cx - r, cy - r, a, cx + r, cy + r, b));
-            g2.fill(e);
-            g2.setColor(new Color(255, 255, 255, stone == Stone.BLACK ? 70 : 160));
-            g2.fillOval(cx - r / 2, cy - r / 2, r / 2, r / 2);
-        }
-        if (last) {
-            g2.setColor(theme.lastMove);
-            int m = Math.max(3, r / 5);
-            g2.fillOval(cx - m, cy - m, m * 2, m * 2);
-        }
-        if (gp > 22 && number > 0) {
-            g2.setFont(getFont().deriveFont(Font.BOLD, (float) Math.max(9, gp * 0.28)));
-            g2.setColor(stone == Stone.BLACK ? Color.WHITE : Color.BLACK);
-            String t = String.valueOf(number);
-            int tw = g2.getFontMetrics().stringWidth(t);
-            g2.drawString(t, cx - tw / 2, cy + 4);
-        }
+        StoneRenderer.draw(g2, cx, cy, r, stone, skin == null ? StoneSkin.JADE : skin,
+                theme, last, number, gp);
     }
 
     private int[] starIndexes(int n) {

@@ -72,16 +72,27 @@ public final class MainFrame extends JFrame {
     private boolean rated;
     private boolean endAnnounced;
     private final Timer clockTimer;
+    private final StyleBar styleBar;
 
     public MainFrame() {
-        super("五子棋 · IntelliJ IDEA");
+        super("五子棋 · 古风");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setMinimumSize(new Dimension(1100, 760));
+        setMinimumSize(new Dimension(1140, 860));
+        try {
+            String[] look = store.loadLook();
+            if (look != null && Theme.isKnown(look[0])) {
+                settings.themeId = look[0];
+                settings.skinId = look[1];
+            }
+        } catch (IOException ignored) {
+        }
         boardPanel.setGame(game);
         boardPanel.setOnClick(this::handleClick);
         setJMenuBar(buildMenu());
+        styleBar = new StyleBar(this::pickStyle);
         JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, boardPanel, buildSide());
         split.setResizeWeight(0.72);
+        add(styleBar, BorderLayout.NORTH);
         add(split, BorderLayout.CENTER);
         JPanel bottom = new JPanel(new BorderLayout());
         bottom.setBorder(new EmptyBorder(6, 10, 8, 10));
@@ -128,12 +139,13 @@ public final class MainFrame extends JFrame {
         net.add(item("加入房间", this::joinRoom));
         net.add(item("断开", this::disconnectNet));
         bar.add(net);
-        JMenu view = new JMenu("外观");
-        for (Theme t : Theme.all()) {
-            view.add(item(t.label, () -> {
-                settings.themeId = t.id;
-                applyTheme();
-            }));
+        JMenu view = new JMenu("桌面风格");
+        for (Theme t : Theme.featured()) {
+            view.add(item(t.label + " · " + t.tagline, () -> pickStyle(t)));
+        }
+        view.addSeparator();
+        for (Theme t : Theme.extras()) {
+            view.add(item("更多：" + t.label, () -> pickStyle(t)));
         }
         view.addSeparator();
         for (StoneSkin s : StoneSkin.values()) {
@@ -639,21 +651,42 @@ public final class MainFrame extends JFrame {
                 玩法：两人轮流在交叉点落子，黑先白后，横竖斜先连成五子（或以上）者胜。
                 默认 15×15。开启禁手时，黑棋不能双三、双四、长连。
                 人机：普通难度会优先成五、堵活四、冲活三。
+                桌面风格：顶部可选古风、卡通、现代皮肤，菜单里还有棋院 / 暗夜 / 高对比，以及多种棋子皮肤。
                 IntelliJ：打开本 Maven 项目，运行 com.gomoku.GomokuApp。
                 """, "帮助", JOptionPane.INFORMATION_MESSAGE);
     }
 
+    private void pickStyle(Theme theme) {
+        settings.themeId = theme.id;
+        settings.skinId = theme.defaultSkinId;
+        applyTheme();
+        refreshAll("已切换皮肤：" + theme.label + " · " + theme.tagline);
+    }
+
     private void applyTheme() {
         Theme t = Theme.byId(settings.themeId);
+        StoneSkin skin = StoneSkin.byId(settings.skinId);
+        setTitle("五子棋 · " + t.label);
         getContentPane().setBackground(t.panelBg);
+        if (getJMenuBar() != null) {
+            Chrome.apply(getJMenuBar(), t);
+        }
+        Chrome.apply(getContentPane(), t);
+        styleBar.setTheme(t);
+        boardPanel.applyLook(t, skin);
         status.setForeground(t.panelFg);
+        status.setFont(Fonts.title(t, 14f));
         clock.setForeground(t.accent);
-        log.setBackground(t.panelBg.darker());
+        clock.setFont(Fonts.title(t, 14f));
+        log.setBackground(t.cardBg);
         log.setForeground(t.panelFg);
-        chat.setBackground(t.panelBg.darker());
+        chat.setBackground(t.cardBg);
         chat.setForeground(t.panelFg);
-        boardPanel.applyLook(t, StoneSkin.byId(settings.skinId));
         ((JPanel) getContentPane()).setBorder(BorderFactory.createLineBorder(t.accent, 2));
+        try {
+            store.saveLook(t.id, skin.id);
+        } catch (IOException ignored) {
+        }
     }
 
     private void refreshAll(String msg) {

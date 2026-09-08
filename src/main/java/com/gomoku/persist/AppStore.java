@@ -16,6 +16,7 @@ public final class AppStore {
     private final Path cloud;
     private final Path ratings;
     private final Path board;
+    private final Path look;
 
     public AppStore() {
         this(Path.of(System.getProperty("user.home"), ".gomoku-idea"));
@@ -27,6 +28,7 @@ public final class AppStore {
         this.cloud = root.resolve("cloud");
         this.ratings = root.resolve("ratings.tsv");
         this.board = root.resolve("leaderboard.tsv");
+        this.look = root.resolve("look.txt");
         try {
             Files.createDirectories(records);
             Files.createDirectories(cloud);
@@ -113,6 +115,26 @@ public final class AppStore {
 
     public Path root() {
         return root;
+    }
+
+    public void saveLook(String themeId, String skinId) throws IOException {
+        Files.writeString(look, themeId + "\n" + skinId + "\n", StandardCharsets.UTF_8);
+    }
+
+    public String[] loadLook() throws IOException {
+        if (!Files.exists(look)) {
+            return null;
+        }
+        var lines = Files.readAllLines(look, StandardCharsets.UTF_8);
+        if (lines.size() < 2) {
+            return null;
+        }
+        String themeId = lines.get(0).trim();
+        String skinId = lines.get(1).trim();
+        if (themeId.isEmpty() || skinId.isEmpty()) {
+            return null;
+        }
+        return new String[]{themeId, skinId};
     }
 
     public static final class Rating {

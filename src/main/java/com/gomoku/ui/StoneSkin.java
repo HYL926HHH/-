@@ -1,6 +1,9 @@
 package com.gomoku.ui;
 
 public enum StoneSkin {
+    JADE("jade", "墨玉"),
+    CANDY("candy", "糖果"),
+    GLASS("glass", "玻璃"),
     CLASSIC("classic", "经典玉石"),
     NEON("neon", "霓虹"),
     WOOD("wood", "木纹"),
@@ -20,6 +23,6 @@ public enum StoneSkin {
                 return s;
             }
         }
-        return CLASSIC;
+        return JADE;
     }
 }
