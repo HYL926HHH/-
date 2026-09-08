@@ -1,0 +1,18 @@
+flowchart TD
+    start2((开始)) --> set[玩家选择人机对战<br/>设置棋盘、难度、禁手等]
+    set --> newg[系统创建新对局 PVE<br/>黑棋先行]
+    newg --> whose{是否轮到玩家?}
+    whose -->|是| human[玩家按业务流一落子]
+    human --> acc{落子是否被接受?}
+    acc -->|否| whose
+    acc -->|是| over2{对局是否结束?}
+    whose -->|否| waitAi[界面短暂等待]
+    waitAi --> think[AI 评估：成五 / 堵四 / 冲三<br/>结合难度与开局库选点]
+    think --> aicommit[系统替 AI 执行落子]
+    aicommit --> over2
+    over2 -->|否| whose
+    over2 -->|是| rate[写入双方 Elo 与排行]
+    rate --> dlg[弹出对局结束]
+    dlg --> again{是否再开一局?}
+    again -->|是| set
+    again -->|否| end2((结束))

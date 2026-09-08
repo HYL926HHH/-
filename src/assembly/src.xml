@@ -15,8 +15,8 @@
                 <include>pom.xml</include>
                 <include>README.md</include>
                 <include>README.txt</include>
-                <include>docs/**</include>
                 <include>.gitignore</include>
+                <include>docs/**</include>
                 <include>src/**</include>
                 <include>.idea/runConfigurations/**</include>
                 <include>scripts/**</include>
