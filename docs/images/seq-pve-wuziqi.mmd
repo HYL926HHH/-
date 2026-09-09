@@ -1,0 +1,49 @@
+sequenceDiagram
+    autonumber
+    actor User as 玩家
+    participant Ctrl as GameController
+    participant BoardUI as BoardView
+    participant Engine as GameEngine
+    participant Board as Board
+    participant Delay as PauseTransition
+    participant AI as WuziqiAI
+    participant Stats as GameStats
+    participant Alert as 胜负弹窗
+
+    User->>Ctrl: 选择人机对战(PVE) 并点击「开始 / 重开」
+    Ctrl->>Engine: startNewGame(PVE)
+    Engine->>Board: clear()
+    Engine-->>Ctrl: 黑方先手 / status=PLAYING
+    Ctrl->>BoardUI: setBoard / redraw
+    Ctrl-->>User: 显示空棋盘，玩家执黑、AI 执白
+
+    User->>BoardUI: 点击交叉点
+    BoardUI->>Ctrl: onBoardClicked(row, col)
+    Ctrl->>Engine: canPlayerPlace()
+    Engine-->>Ctrl: true（非 AI 回合）
+    Ctrl->>Engine: placeStone(row, col)
+    Engine->>Board: set(row, col, BLACK)
+    Engine->>Engine: findWinningLine(...)
+    Engine-->>Ctrl: 未五连，换手 WHITE
+    Ctrl->>BoardUI: redraw
+    Ctrl->>Ctrl: maybeTriggerAi()
+
+    Ctrl->>Delay: play(350ms)
+    Delay->>AI: chooseMove(board, WHITE)
+    Note over AI: 1.己方成五  2.拦截玩家成五  3.启发式评分
+    AI-->>Ctrl: Move(row, col)
+    Ctrl->>Engine: placeStone(AI)
+    Engine->>Board: set(row, col, WHITE)
+    Engine->>Engine: findWinningLine(...)
+
+    alt 形成五连或满盘
+        Engine-->>Ctrl: status 终局 + winningLine
+        Ctrl->>BoardUI: setWinningLine / redraw
+        Ctrl->>Stats: recordResult(PVE, status)
+        Ctrl->>Alert: show("对局结果")
+        Alert-->>User: 你获胜 / AI获胜 / 平局
+    else 未结束
+        Engine-->>Ctrl: 换回 BLACK
+        Ctrl->>BoardUI: redraw
+        Ctrl-->>User: 等待玩家继续落子
+    end

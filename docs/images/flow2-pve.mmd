@@ -1,0 +1,7 @@
+flowchart TD
+    start2((开始)) --> set[选择人机对战并设置棋盘、难度、禁手]
+    set --> newg[系统创建新对局，黑棋先行]
+    newg --> play[双方交替落子直至终局<br/>玩家按规则 / AI评估后系统落子]
+    play --> judge[系统校验落子并判定胜负]
+    judge --> close[写入 Elo 并弹出对局结束]
+    close --> stop((结束))

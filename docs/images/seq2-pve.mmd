@@ -1,0 +1,37 @@
+sequenceDiagram
+    autonumber
+    actor P as 玩家
+    participant UI as MainFrame
+    participant Game
+    participant AI as GomokuAi
+    participant Rules as ForbiddenAnalyzer
+    participant Store as AppStore
+
+    P->>UI: 选择人机对战并设置难度、禁手
+    UI->>Game: new Game(PVE)
+    Game-->>UI: 新对局，黑棋先行
+    UI-->>P: 显示空棋盘
+
+    P->>UI: 点击交叉点落子
+    UI->>Game: click(x,y)
+    Game->>Rules: 校验空点、禁手、连五
+    Rules-->>Game: 合法且未终局
+    Game-->>UI: PlaceResult 落子成功，换手
+    UI-->>P: 刷新棋盘
+
+    UI->>AI: choose(game)
+    AI->>Rules: 评估成五、堵四、冲三
+    Rules-->>AI: 候选点分值
+    AI-->>UI: 选中坐标
+    UI->>Game: commit(aiX,aiY)
+    Game->>Rules: 校验并判定胜负
+    Rules-->>Game: 连五 / 未终局 / 满盘
+    Game-->>UI: PlaceResult
+
+    alt 对局结束
+        UI->>Store: recordResult
+        Store-->>UI: 写入 Elo 与排行
+        UI-->>P: 弹出对局结束
+    else 对局未结束
+        UI-->>P: 等待玩家继续落子
+    end

@@ -1,0 +1,12 @@
+{
+  "theme": "neutral",
+  "themeVariables": {
+    "fontFamily": "WenQuanYi Micro Hei, Droid Sans Fallback, sans-serif",
+    "fontSize": "16px"
+  },
+  "flowchart": {
+    "curve": "basis",
+    "htmlLabels": true,
+    "padding": 12
+  }
+}

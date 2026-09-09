@@ -1,0 +1,40 @@
+sequenceDiagram
+    autonumber
+    actor P as 玩家
+    participant UI as MainFrame
+    participant Game
+    participant Board
+    participant Rules as ForbiddenAnalyzer
+    participant Store as AppStore
+
+    P->>UI: 点击棋盘交叉点(x,y)
+    UI->>Game: click(x,y)
+    Game->>Board: isEmpty(x,y)
+    Board-->>Game: 空点 / 已占用
+    alt 已占用或对局已结束
+        Game-->>UI: PlaceResult 拒绝
+        UI-->>P: 提示无法落子
+    else 空点可落
+        opt 黑棋且开启禁手
+            Game->>Rules: previewForbidden(board,x,y)
+            Rules-->>Game: 无禁手 / 双三双四长连
+        end
+        alt 命中禁手
+            Game-->>UI: PlaceResult 拒绝禁手
+            UI-->>P: 提示禁手，棋盘不变
+        else 合法落子
+            Game->>Board: set(x,y,当前方)
+            Game->>Rules: isExactFive / isFiveOrMore
+            Rules-->>Game: 是否连五
+            alt 连五或满盘
+                Game-->>UI: PlaceResult 黑胜 / 白胜 / 和棋
+                UI->>UI: 高亮胜线并弹出对局结束
+                UI->>Store: recordResult
+                Store-->>UI: 更新 Elo
+                UI-->>P: 显示终局结果
+            else 对局继续
+                Game-->>UI: PlaceResult 换手
+                UI-->>P: 刷新棋盘，提示对方走子
+            end
+        end
+    end
