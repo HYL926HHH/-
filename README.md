@@ -40,7 +40,7 @@ chmod +x scripts/package.sh
 
 ## 需求分析：核心业务流活动图
 
-活动图见 [`docs/核心业务流-活动图.md`](docs/核心业务流-活动图.md)，PNG 在 `docs/images/` 与 `dist/活动图下载.zip`：
+活动图见 [`docs/核心业务流-活动图.md`](docs/核心业务流-活动图.md)，时序图见 [`docs/时序图.md`](docs/时序图.md)。PNG 在 `docs/images/`、`dist/活动图下载.zip`、`dist/时序图下载.zip`。
 
 1. **对局落子与胜负判定**：点击交叉点 → 空点 / 确认 / 禁手 → 连五或满盘终局。
 2. **人机对战（单业务流）**：设置 → 开局 → 交替落子至终局 → 写分结束。
