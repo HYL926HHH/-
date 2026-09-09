@@ -1,0 +1,39 @@
+sequenceDiagram
+    autonumber
+    actor User as 玩家
+    participant BoardUI as BoardView
+    participant View as GameView
+    participant Engine as GameEngine
+    participant Board as Board
+    participant AI as GobangAI
+    participant Stats as GameStats
+    participant Alert as 胜负弹窗
+
+    User->>BoardUI: 点击交叉点
+    BoardUI->>View: onCellClicked(row, col)
+    View->>Engine: canPlayerPlace()
+    alt 不可落子
+        Engine-->>View: false
+        View-->>User: 忽略点击
+    else 可落子
+        View->>Engine: placeStone(row, col)
+        Engine->>Board: set(row, col, current)
+        Engine->>Engine: findWinningLine(...)
+        alt 五子连线
+            Engine-->>View: status = WIN + winningLine
+            View->>BoardUI: setWinningLine / redraw
+            View->>Stats: recordResult(...)
+            View->>Alert: show("对局结果")
+            Alert-->>User: 显示胜负 + 高亮连线
+        else 未结束
+            Engine-->>View: 切换对手
+            View->>BoardUI: redraw
+            View->>View: resetCountdown()
+            opt 人机模式且轮到 AI
+                View->>AI: chooseMove(board, WHITE)
+                AI-->>View: Move(row, col)
+                View->>Engine: placeStone(...)
+                View->>View: afterMove()
+            end
+        end
+    end

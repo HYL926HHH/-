@@ -1,0 +1,24 @@
+sequenceDiagram
+    autonumber
+    actor User as 玩家
+    participant Launcher
+    participant FX as JavaFX
+    participant App as GobangApp
+    participant View as GameView
+    participant Engine as GameEngine
+    participant BoardUI as BoardView
+    participant Clock as Timeline
+
+    User->>Launcher: main()
+    Launcher->>FX: launch(GobangApp)
+    FX->>App: start(Stage)
+    App->>View: new GameView()
+    View->>Engine: new GameEngine()
+    View->>BoardUI: new BoardView()
+    View->>View: startNewGame()
+    View->>Engine: startNewGame(mode)
+    Engine-->>View: 棋盘清空 / 黑方先手
+    View->>BoardUI: setBoard / redraw
+    View->>Clock: startCountdown(30s)
+    App->>App: stage.setScene / show
+    App-->>User: 显示五子棋主界面

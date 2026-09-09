@@ -1,0 +1,26 @@
+sequenceDiagram
+    autonumber
+    actor User as 玩家
+    participant View as GameView
+    participant Engine as GameEngine
+    participant BoardUI as BoardView
+    participant Clock as Timeline
+    participant Stats as GameStats
+    participant Alert as 胜负弹窗
+
+    alt 点击悔棋
+        User->>View: undoMove()
+        View->>Engine: undo()
+        Note over Engine: PVP 撤 1 步；PVE 撤玩家和 AI 两步
+        Engine-->>View: 恢复棋盘 / 清除连线
+        View->>BoardUI: syncBoardView()
+        View->>Clock: resetCountdown()
+    else 倒计时归零
+        Clock->>View: onTick() remaining<=0
+        View->>Engine: forfeitCurrentPlayer()
+        Engine-->>View: 对方获胜
+        View->>BoardUI: syncBoardView()
+        View->>Stats: recordResult(...)
+        View->>Alert: show("对局结果")
+        Alert-->>User: 超时判负提示
+    end
